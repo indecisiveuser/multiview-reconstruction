@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import mpicbg.models.Model;
 import mpicbg.models.NotEnoughDataPointsException;
 import mpicbg.models.PointMatch;
+import mpicbg.models.RansacStoppingCriterion;
 import net.preibisch.legacy.io.IOFunctions;
 import net.preibisch.legacy.mpicbg.PointMatchGeneric;
 import net.preibisch.mvrecon.fiji.ImgLib2Temp.Pair;
@@ -59,7 +60,8 @@ public class RANSAC
 			final int numIterations,
 			final boolean multiConsensus,
 			final double maxTrust,
-			final boolean filterRansac )
+			final boolean filterRansac,
+			final RansacStoppingCriterion stop )
 	{
 		final int numCorrespondences = correspondenceCandidates.size();
 		final int minNumCorrespondences = Math.max( model.getMinNumMatches(), minNumMatches );
@@ -103,7 +105,7 @@ public class RANSAC
 		{
 			try
 			{
-				modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac );
+				modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac, stop );
 			}
 			catch ( NotEnoughDataPointsException e )
 			{
@@ -128,7 +130,7 @@ public class RANSAC
 
 					try
 					{
-						modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac );
+						modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac, stop );
 					}
 					catch ( NotEnoughDataPointsException e )
 					{
@@ -186,7 +188,7 @@ public class RANSAC
 				{
 					// the inlier ratio refers to the remaining candidates, which shrink with every set found; the GUI and
 					// BigStitcher-Spark therefore pass 0 for multi-consensus and accept sets by minNumInliers alone
-					modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac );
+					modelFound = runRANSAC( model, candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust, filterRansac, stop );
 
 					if ( modelFound && inliers.size() >= minNumCorrespondences )
 					{
@@ -262,6 +264,17 @@ public class RANSAC
 
 	}
 
+	/**
+	 * Standard adaptive termination: stop after N = log(1 - confidence) / log(1 - w^k) iterations, w = best inlier
+	 * ratio so far, k = model sample size. The iteration count passed to RANSAC stays the cap.
+	 */
+	public static RansacStoppingCriterion adaptive( final double confidence )
+	{
+		final double logFailure = Math.log( 1 - confidence );
+		return s -> s.bestNumInliers() > 0 &&
+				s.iterations() >= logFailure / Math.log( 1 - Math.pow( (double)s.bestNumInliers() / s.numCandidates(), s.bestModel().getMinNumMatches() ) );
+	}
+
 	private static boolean runRANSAC(
 			final Model<?> model,
 			final List< PointMatch > candidates,
@@ -270,11 +283,12 @@ public class RANSAC
 			final double maxEpsilon,
 			final double minInlierRatio,
 			final double maxTrust,
-			final boolean filterRansac ) throws NotEnoughDataPointsException
+			final boolean filterRansac,
+			final RansacStoppingCriterion stop ) throws NotEnoughDataPointsException
 	{
 		return filterRansac
-				? model.filterRansac( candidates, inliers, numIterations, maxEpsilon, minInlierRatio, maxTrust )
-				: model.ransac( candidates, inliers, numIterations, maxEpsilon, minInlierRatio );
+				? model.filterRansac( candidates, inliers, numIterations, maxEpsilon, minInlierRatio, model.getMinNumMatches(), maxTrust, stop )
+				: model.ransac( candidates, inliers, numIterations, maxEpsilon, minInlierRatio, model.getMinNumMatches(), stop );
 	}
 
 	public static < P extends PointMatch > List< P > removeInliers( final List< P > candidates, final List< P > matches )

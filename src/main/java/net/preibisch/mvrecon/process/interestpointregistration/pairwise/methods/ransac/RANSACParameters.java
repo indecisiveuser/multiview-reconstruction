@@ -22,6 +22,8 @@
  */
 package net.preibisch.mvrecon.process.interestpointregistration.pairwise.methods.ransac;
 
+import mpicbg.models.RansacStoppingCriterion;
+
 /**
  * 
  * @author Stephan Preibisch (stephan.preibisch@gmx.de)
@@ -44,8 +46,9 @@ public class RANSACParameters
 	protected double maxEpsilon, minInlierRatio, maxTrust;
 	protected int minNumMatches, numIterations;
 	protected boolean multiConsensus, filterRansac;
+	protected RansacStoppingCriterion stoppingCriterion;
 
-	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac )
+	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac, final RansacStoppingCriterion stoppingCriterion )
 	{
 		this.maxEpsilon = maxEpsilon;
 		this.minInlierRatio = minInlierRatio;
@@ -54,6 +57,12 @@ public class RANSACParameters
 		this.multiConsensus = multiConsensus;
 		this.maxTrust = maxTrust;
 		this.filterRansac = filterRansac;
+		this.stoppingCriterion = stoppingCriterion;
+	}
+
+	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac )
+	{
+		this( maxEpsilon, minInlierRatio, minNumMatches, numIterations, multiConsensus, maxTrust, filterRansac, RansacStoppingCriterion.NONE );
 	}
 
 	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus )
@@ -73,4 +82,5 @@ public class RANSACParameters
 	public boolean multiConsensus() { return multiConsensus; }
 	public double getMaxTrust() { return maxTrust; }
 	public boolean getFilterRansac() { return filterRansac; }
+	public RansacStoppingCriterion getStoppingCriterion() { return stoppingCriterion; }
 }

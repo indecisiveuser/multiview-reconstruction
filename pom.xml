@@ -117,7 +117,7 @@ like Selective Plane Illumination Microscopy (SPIM) Data.</description>
 		<bigdataviewer-core.version>10.6.12</bigdataviewer-core.version>
 		<multiview-simulation.version>0.3.1</multiview-simulation.version>
 
-		<mpicbg.version>1.6.6</mpicbg.version>
+		<mpicbg.version>1.6.7-SNAPSHOT</mpicbg.version>
 
 		<!-- N5 versions with Zarr v3 shard support (graduated from alpha) -->
 		<!-- See: https://imglib.github.io/imglib2-blog/posts/2025-12-22-n5-shard-dev/ -->
@@ -420,6 +420,15 @@ like Selective Plane Illumination Microscopy (SPIM) Data.</description>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 									<resource>META-INF/json/mpicbg.spim.data.generic.sequence.ImgLoaderIo</resource>
 								</transformer>
+								<!-- n5 discovers codecs, compressions and chunk layouts through these SciJava annotation indexes; every
+								     n5 jar ships its own copy, so they must be merged or e.g. the Zarr v3 chunk grid stays unregistered -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/json/org.janelia.saalfeldlab.n5.Compression$CompressionType</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/json/org.janelia.saalfeldlab.n5.serialization.NameConfig$Name</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
 							<!--<minimizeJar>true</minimizeJar> -->
 							<filters>
