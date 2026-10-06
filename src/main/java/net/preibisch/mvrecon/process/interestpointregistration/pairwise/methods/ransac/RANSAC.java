@@ -29,12 +29,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import mpicbg.models.Model;
 import mpicbg.models.NotEnoughDataPointsException;
 import mpicbg.models.PointMatch;
-import mpicbg.models.RansacStoppingCriterion;
+import mpicbg.models.RansacState;
 import net.preibisch.legacy.io.IOFunctions;
 import net.preibisch.legacy.mpicbg.PointMatchGeneric;
 import net.preibisch.mvrecon.fiji.ImgLib2Temp.Pair;
@@ -61,7 +62,7 @@ public class RANSAC
 			final boolean multiConsensus,
 			final double maxTrust,
 			final boolean filterRansac,
-			final RansacStoppingCriterion stop )
+			final Predicate< RansacState > stop )
 	{
 		final int numCorrespondences = correspondenceCandidates.size();
 		final int minNumCorrespondences = Math.max( model.getMinNumMatches(), minNumMatches );
@@ -268,7 +269,7 @@ public class RANSAC
 	 * Standard adaptive termination: stop after N = log(1 - confidence) / log(1 - w^k) iterations, w = best inlier
 	 * ratio so far, k = model sample size. The iteration count passed to RANSAC stays the cap.
 	 */
-	public static RansacStoppingCriterion adaptive( final double confidence )
+	public static Predicate< RansacState > adaptive( final double confidence )
 	{
 		final double logFailure = Math.log( 1 - confidence );
 		return s -> s.bestNumInliers() > 0 &&
@@ -284,7 +285,7 @@ public class RANSAC
 			final double minInlierRatio,
 			final double maxTrust,
 			final boolean filterRansac,
-			final RansacStoppingCriterion stop ) throws NotEnoughDataPointsException
+			final Predicate< RansacState > stop ) throws NotEnoughDataPointsException
 	{
 		return filterRansac
 				? model.filterRansac( candidates, inliers, numIterations, maxEpsilon, minInlierRatio, model.getMinNumMatches(), maxTrust, stop )

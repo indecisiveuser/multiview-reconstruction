@@ -22,7 +22,9 @@
  */
 package net.preibisch.mvrecon.process.interestpointregistration.pairwise.methods.ransac;
 
-import mpicbg.models.RansacStoppingCriterion;
+import java.util.function.Predicate;
+
+import mpicbg.models.RansacState;
 
 /**
  * 
@@ -46,9 +48,9 @@ public class RANSACParameters
 	protected double maxEpsilon, minInlierRatio, maxTrust;
 	protected int minNumMatches, numIterations;
 	protected boolean multiConsensus, filterRansac;
-	protected RansacStoppingCriterion stoppingCriterion;
+	protected Predicate< RansacState > stoppingCriterion;
 
-	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac, final RansacStoppingCriterion stoppingCriterion )
+	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac, final Predicate< RansacState > stoppingCriterion )
 	{
 		this.maxEpsilon = maxEpsilon;
 		this.minInlierRatio = minInlierRatio;
@@ -62,7 +64,7 @@ public class RANSACParameters
 
 	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac )
 	{
-		this( maxEpsilon, minInlierRatio, minNumMatches, numIterations, multiConsensus, maxTrust, filterRansac, RansacStoppingCriterion.NONE );
+		this( maxEpsilon, minInlierRatio, minNumMatches, numIterations, multiConsensus, maxTrust, filterRansac, s -> false );
 	}
 
 	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus )
@@ -82,5 +84,5 @@ public class RANSACParameters
 	public boolean multiConsensus() { return multiConsensus; }
 	public double getMaxTrust() { return maxTrust; }
 	public boolean getFilterRansac() { return filterRansac; }
-	public RansacStoppingCriterion getStoppingCriterion() { return stoppingCriterion; }
+	public Predicate< RansacState > getStoppingCriterion() { return stoppingCriterion; }
 }
