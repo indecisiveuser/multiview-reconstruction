@@ -24,6 +24,7 @@ package net.preibisch.mvrecon.process.interestpointregistration.pairwise.methods
 
 import java.util.function.Predicate;
 
+import mpicbg.models.PointMatch;
 import mpicbg.models.RansacState;
 
 /**
@@ -48,9 +49,9 @@ public class RANSACParameters
 	protected double maxEpsilon, minInlierRatio, maxTrust;
 	protected int minNumMatches, numIterations;
 	protected boolean multiConsensus, filterRansac;
-	protected Predicate< RansacState > stoppingCriterion;
+	protected Predicate< RansacState< ?, PointMatch > > stoppingCriterion;
 
-	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac, final Predicate< RansacState > stoppingCriterion )
+	public RANSACParameters( final double maxEpsilon, final double minInlierRatio, final int minNumMatches, final int numIterations, final boolean multiConsensus, final double maxTrust, final boolean filterRansac, final Predicate< RansacState< ?, PointMatch > > stoppingCriterion )
 	{
 		this.maxEpsilon = maxEpsilon;
 		this.minInlierRatio = minInlierRatio;
@@ -84,5 +85,5 @@ public class RANSACParameters
 	public boolean multiConsensus() { return multiConsensus; }
 	public double getMaxTrust() { return maxTrust; }
 	public boolean getFilterRansac() { return filterRansac; }
-	public Predicate< RansacState > getStoppingCriterion() { return stoppingCriterion; }
+	public Predicate< RansacState< ?, PointMatch > > getStoppingCriterion() { return stoppingCriterion; }
 }
