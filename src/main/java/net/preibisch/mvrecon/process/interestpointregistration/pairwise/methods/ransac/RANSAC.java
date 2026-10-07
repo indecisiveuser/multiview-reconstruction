@@ -271,10 +271,24 @@ public class RANSAC
 	 */
 	public static Predicate< RansacState< ?, PointMatch > > adaptive( final double confidence )
 	{
-		final double logFailure = Math.log( 1 - confidence );
-		return s -> s.bestNumInliers() > 0 &&
-				s.iterations() >= logFailure / Math.log( 1 - Math.pow( (double)s.bestNumInliers() / s.numCandidates(), s.bestModel().getMinNumMatches() ) );
+
+		return s -> !s.bestInliers.isEmpty() &&
+				s.iterations() >= requiredIterations( s, confidence );
 	}
+
+    private static double requiredIterations( final RansacState<?, PointMatch> s, final double confidence )
+    {
+
+        final double numInliers = s.bestInliers.size();
+        final double numCandidates = s.candidates.size();
+        final double k = s.bestModel.getMinNumMatches();
+
+        final double inlierRatio = numInliers / numCandidates;
+        final double allInliers = Math.pow( inlierRatio, k );
+        final double logFailure = Math.log( 1 - confidence );
+
+        return logFailure / Math.log( 1 - allInliers );
+    }
 
 	private static boolean runRANSAC(
 			final Model<?> model,
